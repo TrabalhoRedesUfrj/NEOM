@@ -17,7 +17,7 @@ msgS.addOther(command)
 pkg = msgS.sendMessage()
 
 msgC = MessageHandler()
-msgC.recieveMessage(pkg)
+msgC.receiveMessage(pkg)
 
 # print pkg
 

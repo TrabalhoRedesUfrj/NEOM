@@ -24,7 +24,7 @@ msgS.addPicture(picture)
 pkg = msgS.sendMessage()
 
 msgC = MessageHandler()
-msgC.recieveMessage(pkg)
+msgC.receiveMessage(pkg)
 
 text = msgC.readMessage()
 commands = msgC.readOther()
