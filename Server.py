@@ -3,13 +3,21 @@
 Created on Tue May 30 19:42:34 2017
 @author: vini
 """
-from socket import socket, AF_INET, SOCK_DGRAM
-s = socket(AF_INET, SOCK_DGRAM)
-s.bind(('192.168.0.105',59633))
-print ("using", s.getsockname())
+Host='127.0.0.5'
+Port=50007
+from socket import socket, AF_INET, SOCK_STREAM
+serversocket = socket(AF_INET,SOCK_STREAM)
+serversocket.bind((Host, Port))
+print ("using", serversocket.getsockname())
+serversocket.listen(1)  #Tamanho maximo de conexões permitidas#
+(connectionsocket, addr)=serversocket.accept()
+print 'Conected by', addr
 while True:
-    (data, addr) = s.recvfrom(1024)
+    data = connectionsocket.recv(1024)
+    if not data:
+        break
     print ("Connection from", addr)
     print ("estou aqui recebendo dado do client:", data, "from Client", addr)
     data1="Ola estou recebendo sua menssagem"
-    s.sendto(data1, addr)
+    connectionsocket.sendall(data1)
+connectionsocket.close()
