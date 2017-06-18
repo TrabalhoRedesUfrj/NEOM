@@ -24,7 +24,8 @@ class MessageHandler:
         self.authentication = None
 
     def addMessage(self, text):
-        self.text = text
+        import base64
+        self.text = base64.b64encode(text)
 
     def addPicture(self, picture):
         import base64
@@ -71,7 +72,7 @@ class MessageHandler:
         self.document = attrDict[u'document']
         self.authentication = attrDict[u'authentication']
 
-    def sendAuthentication(self, user, password, new = False, remove = False):
+    def sendAuthentication(self, user, password, new=False, remove=False):
         self.addOther("authenticate")
         # out.addMessage("UserAuthentication")
         if new:
@@ -83,8 +84,8 @@ class MessageHandler:
         return self.sendMessage()
 
     def readMessage(self):
-        if len(self.text)==0: return None
-        return self.text
+        if len(self.text) == 0: return None
+        return self.text.decode('base64')
 
     def readPicture(self, path="", client = None):
         if not self.picture: return None
@@ -93,9 +94,9 @@ class MessageHandler:
         for i in range(len(self.picture)):
             pic = self.picture[i]
             data = "_%s_%1.2i:%1.2i_%i"%(time.strftime("%d_%m_%Y"),
-                                            time.localtime(time.time()).tm_hour,
-                                            time.localtime(time.time()).tm_min,
-                                            i)
+                                         time.localtime(time.time()).tm_hour,
+                                         time.localtime(time.time()).tm_min,
+                                         i)
             img = "%ssavedImage%s.png"%(path,data)
             if client:
                 img = "%s_%s"%(client,img)
@@ -120,7 +121,7 @@ class MessageHandler:
         return doc
 
     def readOther(self):
-        if len(self.other)==0: return None
+        if len(self.other) == 0: return None
         return self.other
 
     def readAuthentication(self):
@@ -129,16 +130,16 @@ class MessageHandler:
                 'password': self.authentication[1]}
 
 
-def createUserFile(name, service, path=".", sufix='pic.tz', algorithm="md5"):
+def createUserFile(name, service, path=".", sufix="pic.tz", algorithm="md5"):
     # TODO: Make file that can only be edited through the code
     if algorithm not in ['sha1', 'sha224', 'sha384', 'sha256', 'sha512', 'md5']:
         raise NotImplementedError('Hash function "%s" not found' % (algorithm))
-    filename = "%s/%s.%s"%(path,name,sufix)
+    filename = "%s/%s.%s"%(path, name, sufix)
     file = open(filename, 'w')
-    lines = ["USERS FOR %s SERVER"%(service.upper()),"\n",
-             "Hash algorithm: %s"%(algorithm),"\n"
+    lines = ["USERS FOR %s SERVER"%(service.upper()), "\n",
+             "Hash algorithm: %s"%(algorithm), "\n"
              "\n",
-             "-"*20,"\n"]
+             "-"*20, "\n"]
     file.writelines(lines)
     file.close()
     return filename
@@ -181,7 +182,7 @@ class UserAuthentication:
         for line in lines[4:]:
             if line.split(',')[0] == user:
                 raise NameError("There is already a user with this name")
-        text = "%s,%s\n"%(user,passHash)
+        text = "%s,%s\n"%(user, passHash)
         file.write(text)
         file.close()
 
@@ -207,7 +208,7 @@ class UserAuthentication:
             words = line.split(',')
             if words[0] == user:
                 if passHash == words[1]:
-                    lines = lines.remove(line)
+                    lines.remove(line)
                     file.close()
                     file = open(self.file, 'w')
                     file.writelines(lines)
