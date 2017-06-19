@@ -29,7 +29,7 @@ commands = msgC.readOther()
 if text:
     try:
         print emoji.emojize('Message Received:\n%s'%(text), use_aliases=True)
-    except  UnicodeDecodeError:
+    except UnicodeDecodeError:
         print 'Message Received:\n%s'%(text)
 if commands:
     for cm in commands:
