@@ -1,5 +1,6 @@
-# Tcp Chat server
+#!/usr/bin/python
 
+# TCP Chat server
 import socket, select
 import threading
 import ssl
