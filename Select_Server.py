@@ -103,11 +103,12 @@ if __name__ == "__main__":
                             if connect:
                                 first = True
                                 text = ""
-                                for u, ad in enumerate(usernames):
+                                for key in usernames.keys():
                                     if first:
-                                        text += "%s"%(u)
+                                        text += "%s"%(usernames[key])
                                         first = False
-                                    else: s += ",%s"%(u)
+                                    else:
+                                        text += ",%s"%(usernames[key])
                                 out.addMessage(text)
                             ssl_sock.send(out.sendMessage())
                     if connect:
@@ -116,6 +117,7 @@ if __name__ == "__main__":
                         print "Client %s %s connected" % (usernames[addr],str(addr))
                         out.cleanAll()
                         out.addName("Server")
+                        out.addOther("userIn")
                         out.addMessage("%s %s entered room\n" % (usernames[addr],str(addr)))
                         broadcast_data(ssl_sock, out.sendMessage(), CONNECTION_LIST, server_socket)
                 except:
@@ -143,6 +145,7 @@ if __name__ == "__main__":
                 except:
                     out = MessageHandler()
                     out.addName("Server")
+                    out.addOther("userOut")
                     out.addMessage("Client %s %s is offline \n" % (usernames[addr],str(addr)))
                     broadcast_data(sock, out.sendMessage(), CONNECTION_LIST, server_socket)
                     print "Client %s %s is offline" % (usernames[addr],str(addr))

@@ -9,7 +9,7 @@ def prompt():
 
 username = 'meunome'
 senha = 'ehzoado'
-new = True
+new = False
 
 # main function
 if __name__ == "__main__":
@@ -45,27 +45,28 @@ if __name__ == "__main__":
         for sock in read_sockets:
             if sock == ssl_sock:
                 data = sock.recv(4096)
-            if data:
-                auth.cleanAll()
-                auth.receiveMessage(data)
-                commands = auth.readOther()
-                if "authenticate" in commands:
-                    if "ok" in commands:
-                        ans = True
-                        users = auth.readMessage()
-                        users = users.split(',')
-                        break
-                    elif "fail" in commands:
-                        text = auth.readMessage()
-                        print "Could not execute command:\n%s" % (text)
+                if data:
+                    auth.cleanAll()
+                    auth.receiveMessage(data)
+                    commands = auth.readOther()
+                    if "authenticate" in commands:
+                        if "ok" in commands:
+                            ans = True
+                            users = auth.readMessage()
+                            if users:
+                                users = users.split(',')
+                            break
+                        elif "fail" in commands:
+                            text = auth.readMessage()
+                            print "Could not execute command:\n%s" % (text)
+                            sys.exit()
+                            prompt()
+                            ans = True
+                            break
+                        print "Error: Response could not be interpreted."
                         sys.exit()
                         prompt()
                         ans = True
-                        break
-                    print "Error: Response could not be interpreted."
-                    sys.exit()
-                    prompt()
-                    ans = True
                     break
 
     print 'Connected to remote host. Start sending messages'

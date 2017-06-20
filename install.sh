@@ -30,7 +30,7 @@ else
     chmod 444 Protocol.py Select_Client.py Select_Server.py;
 
     echo "  Setting up enviroment"
-    if find tmp >/dev/null 2>/dev/null; then
+    if ! find tmp >/dev/null 2>/dev/null; then
         mkdir tmp;
     fi;
     for arg in "$@"; do
