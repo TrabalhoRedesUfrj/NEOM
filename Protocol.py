@@ -184,12 +184,14 @@ class UserAuthentication:
 
     def addUser(self, user, password):
         # TODO: Save users in alphabetic order
+        if " " in user:
+            raise NameError("User name invalid. Choose another")
         passHash = self._getHash(password)
         file = open(self.file, 'r+')
         lines = file.readlines()
         for line in lines[4:]:
             if line.split(',')[0] == user:
-                raise NameError("There is already a user with this name")
+                raise NameError("User already used. Choose another.")
         text = "%s,%s\n"%(user, passHash)
         file.write(text)
         file.close()
@@ -228,14 +230,14 @@ class UserAuthentication:
         file.close()
         return "No user"
 
-    # TODO: Option of changind password
-    # def changePassword(self,user,olspswd,newpswd):
-    #    ans = self.checkUser(user,olspswd)
-    #    if ans != "User verified": return ans
-    #    passHash = self._getHash(newpswd)
-    #    file = open(self.file, 'r+')
-    #    lines = file.readlines()
-    #    for i in range(len(lines[4:])):
-    #        words = line.split(',')
-    #        if words[0] == user:
-    #            line = "%s,%s\n"%(user, passHash)
+    # TODO: Option of change password
+    #  def changePassword(self,user,olspswd,newpswd):
+    #     ans = self.checkUser(user,olspswd)
+    #     if ans != "User verified": return ans
+    #     passHash = self._getHash(newpswd)
+    #     file = open(self.file, 'r+')
+    #     lines = file.readlines()
+    #     for i in range(len(lines[4:])):
+    #         words = line.split(',')
+    #         if words[0] == user:
+    #             line = "%s,%s\n"%(user, passHash)

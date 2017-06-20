@@ -69,9 +69,9 @@ if __name__ == "__main__":
                                     out.addOther("ok")
                                     print "Added user %s"%(check['user'])
                                     connect = True
-                                except NameError:
+                                except NameError as e:
                                     out.addOther("fail")
-                                    out.addMessage("User already used. Choose another.")
+                                    out.addMessage(e.message)
                                     ssl_sock.send(out.sendMessage())
                                     ssl_sock.close()
                             elif "rm" in commands:
