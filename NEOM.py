@@ -57,12 +57,8 @@ class ClientThread(QThread):
                             self.contaTe.append(msg.split(" ")[0]+"\n")
                         elif cmd[0] == "userOut":
                             self.mensTe.append("\r%s:\n%s\n"%(user,msg))
-                            tempCont = str(self.contaTe.toPlainText())
-                            print 'a'
-                            print tempCont
-                            tempCont.replace('\n'+msg.split(" ")[1],"dasdasdasdas")
-                            print 'b'
-                            print '\n'+msg.split(" ")[1]+'\n'
+                            tempCont = self.contaTe.toPlainText()
+                            tempCont.replace('\n'+msg.split(" ")[1]+'\n',"")
                             self.progressEvent.emit(tempCont)
                         elif cmd[0] == "newFile":
                             self.mensTe.append("\r%s:\n%s\n"%(user,msg))
