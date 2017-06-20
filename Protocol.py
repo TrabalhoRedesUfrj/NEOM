@@ -51,6 +51,9 @@ class MessageHandler:
     def addAuthentication(self, user, password):
         self.authentication = [user, password]
 
+    def addName(self, user):
+        self.authentication = user
+
     def sendMessage(self):
         import json
         attrDict = {
@@ -129,6 +132,11 @@ class MessageHandler:
         return {'user': self.authentication[0],
                 'password': self.authentication[1]}
 
+    def readName(self):
+        if not self.authentication: return None
+        if "authenticate" in self.other: return None
+        return self.authentication
+
 
 def createUserFile(name, service, path=".", sufix="pic.tz", algorithm="md5"):
     # TODO: Make file that can only be edited through the code
@@ -194,7 +202,7 @@ class UserAuthentication:
         for line in lines[4:]:
             words = line.split(',')
             if words[0] == user:
-                if passHash == words[1]:
+                if passHash == words[1][:-1]:
                     return "User verified"
                 else:
                     return "Wrong Password"

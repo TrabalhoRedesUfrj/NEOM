@@ -10,6 +10,9 @@ Para instalar o programa, rodar o arquivo install no terminal.
 ```
 Para instalar como servidor, colocar o argumento --server e para desinstalar, o argumento --uninstall.
 
+A instalação de pacotes do python do install.sh só oferece suporte para Linux (em especial Ubuntu). Se for instalar em
+outro sistema Unix, rodar o programa com o argumento --no-pkg e os pacotes terão que ser instalados por fora.
+
 Para utilizar o chat, rodar o arquivo Select_Server no servidor:
 ```
 ./Select_Server.py
