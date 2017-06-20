@@ -3,13 +3,14 @@ from Protocol import MessageHandler
 
 ssl_certfile = "./keys/server.crt"
 
-def prompt():
-    sys.stdout.write('<You> ')
-    sys.stdout.flush()
-
-username = 'meunome'
-senha = 'ehzoado'
+username = '2'
+senha = 'me'
 new = False
+
+
+def prompt():
+    sys.stdout.write('<You-%s> '%(username))
+    sys.stdout.flush()
 
 # main function
 if __name__ == "__main__":
