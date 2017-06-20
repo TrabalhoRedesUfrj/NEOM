@@ -132,19 +132,16 @@ if __name__ == "__main__":
                     out = MessageHandler()
                     data = sock.recv(RECV_BUFFER)
                     if data:
-                        try:
-                            out.receiveMessage(data)
-                            if out.readOther():
-                                if "authenticate" in out.readOther():
-                                        continue
-                            if "QUIT" == out.readMessage():
-                                raise
-                            else:
-                                if usernames[sock.getpeername()] != out.readName():
-                                    print "Something wrong with the client!! It has forgotten it's own name!! :scream:"
-                                broadcast_data(sock, data, CONNECTION_LIST, server_socket)
-                        except:
-                            pass
+                        out.receiveMessage(data)
+                        if out.readOther():
+                            if "authenticate" in out.readOther():
+                                    continue
+                        if "QUIT" == out.readMessage():
+                            raise
+                        else:
+                            if usernames[sock.getpeername()] != out.readName():
+                                print "Something wrong with the client!! It has forgotten it's own name!! :scream:"
+                            broadcast_data(sock, data, CONNECTION_LIST, server_socket)
                 except:
                     out = MessageHandler()
                     out.addName("Server")
