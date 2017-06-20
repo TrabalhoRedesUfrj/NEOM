@@ -26,5 +26,6 @@ Uma vez iniciado o programa, será requisitado que se faça o login e se digite 
 comunicar. Se você não tem cadastro, pode selecionar a opção de criar um novo registro. Após se conectar, o *NEOM* pode
 ser utilizado como um chat normal.
 
-O programa oferece a segurança de **controle de acesso através** do cadastro de usuários e **confidenciabilidade** 
-através de criptografia SSL.
+O programa oferece a segurança de **controle de acesso** através do cadastro de usuários e **confidenciabilidade** 
+através de criptografia SSL. Tem suporte para transmissão de imagens e arquivos em geral, além de outras funcionalidades
+como uso de emoticons e uma interface gráfica amigável.

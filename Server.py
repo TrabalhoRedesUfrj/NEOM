@@ -6,9 +6,8 @@ __all__ = ['TCPBase',
            'ServerThread',
            'broadcast_data']
 
-import socket, select
+import socket
 import threading
-import ssl
 
 class TCPBase(threading.Thread):
     def __init__(self):

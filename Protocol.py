@@ -231,13 +231,20 @@ class UserAuthentication:
         return "No user"
 
     # TODO: Option of change password
-    #  def changePassword(self,user,olspswd,newpswd):
-    #     ans = self.checkUser(user,olspswd)
-    #     if ans != "User verified": return ans
-    #     passHash = self._getHash(newpswd)
-    #     file = open(self.file, 'r+')
-    #     lines = file.readlines()
-    #     for i in range(len(lines[4:])):
-    #         words = line.split(',')
-    #         if words[0] == user:
-    #             line = "%s,%s\n"%(user, passHash)
+    def changePassword(self,user,olspswd,newpswd):
+       ans = self.checkUser(user,olspswd)
+       if ans != "User verified": return ans
+       passHash = self._getHash(newpswd)
+       file = open(self.file, 'r+')
+       lines = file.readlines()
+       for line in lines[4:]:
+           words = line.split(',')
+           if words[0] == user:
+               lines.remove(line)
+               file.close()
+               break
+       file = open(self.file, 'w')
+       lines += ["%s,%s\n" % (user, passHash)]
+       file.writelines(lines)
+       file.close()
+       return "Password Changed"
