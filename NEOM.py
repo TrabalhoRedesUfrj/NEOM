@@ -1,10 +1,46 @@
+__all__ = ['ClientThread']
 import sys
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from random import randint
 import time
+import socket, select, string, sys, ssl, pprint
+ssl_certfile = "./keys/server.crt"
 
-def chat(myName,ServerIp,app,geo):
+class ClientThread(QThread):
+    def __init__(self,contaTe,mensTe, textEnv, ssl_sock):
+        QThread.__init__(self)
+        self.contaTe = contaTe
+        self.mensTe = mensTe
+        self.textEnv = textEnv
+        self.ssl_sock = ssl_sock
+        self.sent = 0
+        self.mens = ""
+    def recieve(self,mens):
+        self.mens = mens
+        self.sent = 21
+    def run(self):
+        while 1:
+            socket_list = [self.sent,self.ssl_sock]
+            # Get the list sockets which are readable
+            read_sockets, write_sockets, error_sockets = select.select(socket_list, [], [])
+            for sock in read_sockets:
+                # incoming message from remote server
+                if sock == self.ssl_sock:
+                    data = sock.recv(4096)
+                    if not data:
+                        print '\nDisconnected from chat server'
+                    else:
+                        # print data
+                        self.mensTe.append(data)
+
+                # user entered a message
+                else:
+                    if(self.sent != 0):
+                        print self.sent
+                        self.sent = 0
+                        self.ssl_sock.send(self.mens + "\n")
+def chat(myName,serverIp,serverPort,app,geo, ssl_sock):
     def bAten_clicked():
         print "oia, o botao 1 foi pressionado"
         xOri = w.geometry().x()
@@ -24,25 +60,18 @@ def chat(myName,ServerIp,app,geo):
         w.move(xOri,yOri)
         
     def bEnv_clicked():
-        mensagem = textEnv.toPlainText()
+        client.recieve(textEnv.toPlainText())
         textEnv.clear()
-        print "vixe, a mensagem " + mensagem+ " foi enviada!"
-
-        ########CODIGO DE ENVIO DE MENSAGEM AQUI DIACHO
-
-
-
-
-
-
-
-
-        #########
+        print "vixe, a mensagem  foi enviada!"
     w = QWidget()
+    #palette = QPalette()
+    #palette.setBrush(QPalette.Background,QBrush(QPixmap("fk-neon.jpg")))
+    #w.setPalette(palette)
+    
     userT = QLabel(w)
     userT.setText("Usuario: " + myName)
     conneT = QLabel(w)
-    conneT.setText("Conectado a: "+ ServerIp)
+    conneT.setText("Conectado a: "+ serverIp +":")
     mensTi = QLabel(w)
     mensTi.setText("Mensagens")
     mensTe = QTextEdit(w)
@@ -93,8 +122,9 @@ def chat(myName,ServerIp,app,geo):
     vbox.addLayout(grid2)
     w.setLayout(vbox)
 
-    
-    w.setGeometry(geo.x(),geo.y(),500,500)
+    client = ClientThread(contaTe,mensTe, textEnv, ssl_sock)
+    client.start()
+    w.setGeometry(geo.x(),geo.y(),800,500)
     w.setWindowTitle("NEOM")
     w.show()
 
@@ -102,30 +132,67 @@ def chat(myName,ServerIp,app,geo):
 def start():
     
     def bCo_clicked():
+        temp = False
+        try:
+            serverIp = textT.text()
+            serverPort = int(textTP.text())
+            myName = textTU.text()
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(2)
+            ssl_sock=ssl.wrap_socket(s,ca_certs=ssl_certfile,cert_reqs=ssl.CERT_REQUIRED)
+            try:
+                ssl_sock.connect((serverIp,serverPort))
+                print repr(ssl_sock.getpeername())
+                print ssl_sock.cipher()
+                print pprint.pformat(ssl_sock.getpeercert())
+                w.close()
+                temp = True
+            except:
+                print "Falha ao tentar conectar no servidor"
+        except:
+            print "dados invalidos"
+        if (temp):
+            chat(myName,serverIp,serverPort,app,w.geometry(), ssl_sock)
+    def bRes_clicked():
         ServerIp = textT.text()
-        myName = textTU.text()
-        w.close()
-        chat(myName,ServerIp,app,w.geometry())
         
     app = QApplication(sys.argv)
     w = QWidget()
+    #palette = QPalette()
+    #palette.setBrush(QPalette.Background,QBrush(QPixmap("fk-neon.jpg")))
+    #w.setPalette(palette)
     subT = QLabel(w)
     subT.setText("Digite o ip do servidor:")
+    subTP = QLabel(w)
+    subTP.setText("Digite a porta do servidor:")
     subTU = QLabel(w)
-    subTU.setText("Digite o nome de usurario:")
+    subTU.setText("Digite o nome de usuario:")
+    subTUS = QLabel(w)
+    subTUS.setText("Digite a senha:")
     textT = QLineEdit(w)
+    textTP = QLineEdit(w)
     textTU = QLineEdit(w)
+    textTUS = QLineEdit(w)
+    textTUS.setEchoMode(QLineEdit.Password)
 
     bCo = QPushButton(w)
     bCo.setText("Conectar")
     bCo.clicked.connect(bCo_clicked)
-
+    bRes = QPushButton(w)
+    bRes.setText("Registrar")
+    bRes.clicked.connect(bRes_clicked)
+                       
     vbox = QVBoxLayout()
     vbox.addWidget(subTU)
     vbox.addWidget(textTU)
+    vbox.addWidget(subTUS)
+    vbox.addWidget(textTUS)
     vbox.addWidget(subT)
     vbox.addWidget(textT)
+    vbox.addWidget(subTP)
+    vbox.addWidget(textTP)
     vbox.addWidget(bCo)
+    vbox.addWidget(bRes)
     vbox.addStretch(1)
 
     hbox = QHBoxLayout()
@@ -135,7 +202,7 @@ def start():
     w.setLayout(hbox)
 
     
-    w.setGeometry(200,200,200,100)
+    w.setGeometry(200,200,200,300)
     w.setWindowTitle("NEOM")
     w.show()
     sys.exit(app.exec_())
