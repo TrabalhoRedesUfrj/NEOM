@@ -72,6 +72,8 @@ if __name__ == "__main__":
                                 except NameError:
                                     out.addOther("fail")
                                     out.addMessage("User already used. Choose another.")
+                                    ssl_sock.send(out.sendMessage())
+                                    ssl_sock.close()
                             elif "rm" in commands:
                                 text = users.rmUser(check['user'], check['password'])
                                 if text == "User removed":
@@ -83,6 +85,8 @@ if __name__ == "__main__":
                                         out.addMessage("%s. Try again." % (text))
                                     elif text == "No user":
                                         out.addMessage("%s found. Try again." % (text))
+                                    ssl_sock.send(out.sendMessage())
+                                    ssl_sock.close()
                             else:
                                 text = users.checkUser(check['user'], check['password'])
                                 if text == "User verified":
@@ -96,6 +100,15 @@ if __name__ == "__main__":
                                         out.addMessage("%s found. Try again." % (text))
                                     ssl_sock.send(out.sendMessage())
                                     ssl_sock.close()
+                            if connect:
+                                first = True
+                                text = ""
+                                for u, ad in enumerate(usernames):
+                                    if first:
+                                        text += "%s"%(u)
+                                        first = False
+                                    else: s += ",%s"%(u)
+                                out.addMessage(text)
                             ssl_sock.send(out.sendMessage())
                     if connect:
                         CONNECTION_LIST.append(ssl_sock)
@@ -135,6 +148,7 @@ if __name__ == "__main__":
                     print "Client %s %s is offline" % (usernames[addr],str(addr))
                     sock.close()
                     CONNECTION_LIST.remove(sock)
+                    usernames.pop(addr)
                     continue
 
     server_socket.soc.close()

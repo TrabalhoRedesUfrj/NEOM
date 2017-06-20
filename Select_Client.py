@@ -52,6 +52,8 @@ if __name__ == "__main__":
                 if "authenticate" in commands:
                     if "ok" in commands:
                         ans = True
+                        users = auth.readMessage()
+                        users = users.split(',')
                         break
                     elif "fail" in commands:
                         text = auth.readMessage()

@@ -2,7 +2,7 @@
 ### Universidade Federal do Rio de Janeiro
 
  *Programa de envio e recebimento de mensagens no modelo Cliente/Servidor.
-Por Amanda Camacho, Vinicius Souza e Braian Igreja.* 
+Por Amanda Camacho, Braian Igreja e Vinicius Souza.* 
 
 Para instalar o programa, rodar o arquivo install no terminal.
 ```
