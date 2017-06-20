@@ -1,10 +1,15 @@
 import socket, select, string, sys, ssl, pprint
+from Protocol import MessageHandler
 
 ssl_certfile = "./keys/server.crt"
 
 def prompt():
     sys.stdout.write('<You> ')
     sys.stdout.flush()
+
+username = 'meunome'
+senha = 'ehzoado'
+new = True
 
 # main function
 if __name__ == "__main__":
@@ -30,6 +35,37 @@ if __name__ == "__main__":
         print 'Unable to connect'
         sys.exit()
 
+    auth = MessageHandler()
+    ssl_sock.send(auth.sendAuthentication(username, senha, new=new))
+    ans = False
+    socket_list = [sys.stdin, ssl_sock]
+    read_sockets, write_sockets, error_sockets = select.select(socket_list, [], [])
+    # Wait for answer from server
+    while not ans:
+        for sock in read_sockets:
+            if sock == ssl_sock:
+                data = sock.recv(4096)
+            if data:
+                auth.cleanAll()
+                auth.receiveMessage(data)
+                commands = auth.readOther()
+                if "authenticate" in commands:
+                    if "ok" in commands:
+                        ans = True
+                        break
+                    elif "fail" in commands:
+                        text = auth.readMessage()
+                        print "Could not execute command:\n%s" % (text)
+                        sys.exit()
+                        prompt()
+                        ans = True
+                        break
+                    print "Error: Response could not be interpreted."
+                    sys.exit()
+                    prompt()
+                    ans = True
+                    break
+
     print 'Connected to remote host. Start sending messages'
     print 'Type (QUIT) in msg to exit chat'
     prompt()
@@ -49,13 +85,20 @@ if __name__ == "__main__":
                     sys.exit()
                 else:
                     # print data
-                    sys.stdout.write(data)
+                    indata = MessageHandler()
+                    indata.receiveMessage(data)
+                    msg = indata.readMessage()
+                    user = indata.readName()
+                    sys.stdout.write("\r<%s> %s"%(user,msg))
                     prompt()
 
             # user entered a message
             else:
+                out = MessageHandler()
                 msg = sys.stdin.readline()
-                ssl_sock.send(msg)
+                out.addMessage(msg)
+                out.addName(username)
+                ssl_sock.send(out.sendMessage())
                 if "QUIT" in msg:
                     sys.exit()
                 prompt()
