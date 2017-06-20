@@ -57,8 +57,12 @@ class ClientThread(QThread):
                             self.contaTe.append(msg.split(" ")[0]+"\n")
                         elif cmd[0] == "userOut":
                             self.mensTe.append("\r%s:\n%s\n"%(user,msg))
-                            tempCont = self.contaTe.toPlainText()
-                            tempCont.replace(sg.split(" ")[1] + "\n","\n")
+                            tempCont = str(self.contaTe.toPlainText())
+                            print 'a'
+                            print tempCont
+                            tempCont.replace('\n'+msg.split(" ")[1],"dasdasdasdas")
+                            print 'b'
+                            print '\n'+msg.split(" ")[1]+'\n'
                             self.progressEvent.emit(tempCont)
                         elif cmd[0] == "newFile":
                             self.mensTe.append("\r%s:\n%s\n"%(user,msg))
@@ -116,7 +120,7 @@ def chat(myName,serverIp,serverPort,app,geo, ssl_sock,users):
         w.setPalette(palette)
     def remakeCont(newCont):
         contaTe.clear()
-        #contaTe.append(newCont)
+        contaTe.append(newCont)
     w = ChatJan()
     w.resizeEvent = onResize
     userT = QLabel(w)
