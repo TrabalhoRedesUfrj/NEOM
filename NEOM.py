@@ -1,14 +1,20 @@
-__all__ = ['ClientThread']
+##+"""
+##+    Main function of the client with GUI
+##+    Author: Ex7755
+##+"""
+
 import sys
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from random import randint
 import time
 import socket, select, string, sys, ssl, pprint
+from Protocol import MessageHandler
 ssl_certfile = "./keys/server.crt"
 
 class ClientThread(QThread):
-    def __init__(self,contaTe,mensTe, textEnv, ssl_sock):
+    progressEvent = pyqtSignal(QString)
+    def __init__(self,contaTe,mensTe, textEnv, ssl_sock,username,w):
         QThread.__init__(self)
         self.contaTe = contaTe
         self.mensTe = mensTe
@@ -16,33 +22,72 @@ class ClientThread(QThread):
         self.ssl_sock = ssl_sock
         self.sent = 0
         self.mens = ""
+        self.username = username
+        self.w = w
     def recieve(self,mens):
         self.mens = mens
         self.sent = 21
+    def close(self):
+        self.runT = False
     def run(self):
-        while 1:
+        self.runT = True
+        while self.runT:
             socket_list = [self.sent,self.ssl_sock]
             # Get the list sockets which are readable
             read_sockets, write_sockets, error_sockets = select.select(socket_list, [], [])
+            
             for sock in read_sockets:
                 # incoming message from remote server
                 if sock == self.ssl_sock:
                     data = sock.recv(4096)
                     if not data:
                         print '\nDisconnected from chat server'
+                        self.w.close()
+                        self.runT = False
                     else:
-                        # print data
-                        self.mensTe.append(data)
+                        indata = MessageHandler()
+                        indata.receiveMessage(data)
+                        cmd = indata.readOther()
+                        msg = indata.readMessage()
+                        user = indata.readName()
+                        if cmd == None:
+                            self.mensTe.append("\r%s:\n%s\n"%(user,msg))
+                        elif cmd[0] == "userIn":
+                            self.mensTe.append("\r%s:\n%s\n"%(user,msg))
+                            self.contaTe.append(msg.split(" ")[0]+"\n")
+                        elif cmd[0] == "userOut":
+                            self.mensTe.append("\r%s:\n%s\n"%(user,msg))
+                            tempCont = self.contaTe.toPlainText()
+                            tempCont.replace(sg.split(" ")[1] + "\n","\n")
+                            self.progressEvent.emit(tempCont)
+                        elif cmd[0] == "newFile":
+                            self.mensTe.append("\r%s:\n%s\n"%(user,msg))
+                        elif cmd[0] == "chato":
+                            print "sou chato"
+                        else:
+                            self.mensTe.append("\r%s:\n%s\n"%(user,msg))
+                            
 
                 # user entered a message
                 else:
                     if(self.sent != 0):
-                        print self.sent
+                        
+                        out = MessageHandler()
+                        out.addMessage(self.mens)
+                        out.addName(self.username)
                         self.sent = 0
-                        self.ssl_sock.send(self.mens + "\n")
-def chat(myName,serverIp,serverPort,app,geo, ssl_sock):
+                        self.ssl_sock.send(out.sendMessage())
+        out = MessageHandler()
+        out.addMessage("QUIT")
+        self.ssl_sock.send(out.sendMessage())
+class ChatJan(QWidget):
+    def defineThre(self,thre):
+        self.thre = thre
+    def closeEvent(self,event):
+        self.thre.close()
+        
+def chat(myName,serverIp,serverPort,app,geo, ssl_sock,users):
     def bAten_clicked():
-        print "oia, o botao 1 foi pressionado"
         xOri = w.geometry().x()
         yOri = w.geometry().y()
         w.move(0,0)
@@ -60,28 +105,41 @@ def chat(myName,serverIp,serverPort,app,geo, ssl_sock):
         w.move(xOri,yOri)
         
     def bEnv_clicked():
-        client.recieve(textEnv.toPlainText())
+        mensagem =  str(textEnv.toPlainText())
+        client.recieve(mensagem)
+        mensTe.append("\r%s:\n%s\n"%(myName,mensagem))
         textEnv.clear()
-        print "vixe, a mensagem  foi enviada!"
-    w = QWidget()
-    #palette = QPalette()
-    #palette.setBrush(QPalette.Background,QBrush(QPixmap("fk-neon.jpg")))
-    #w.setPalette(palette)
-    
+
+    def onResize(event):
+        palette = QPalette()
+        palette.setBrush(QPalette.Background,QBrush(QPixmap("fk-neon.jpg").scaled(w.size())))
+        w.setPalette(palette)
+    def remakeCont(newCont):
+        contaTe.clear()
+        #contaTe.append(newCont)
+    w = ChatJan()
+    w.resizeEvent = onResize
     userT = QLabel(w)
     userT.setText("Usuario: " + myName)
+    userT.setStyleSheet("color: white")
     conneT = QLabel(w)
     conneT.setText("Conectado a: "+ serverIp +":")
+    conneT.setStyleSheet("color: white")
     mensTi = QLabel(w)
     mensTi.setText("Mensagens")
+    mensTi.setStyleSheet("color: white")
     mensTe = QTextEdit(w)
     mensTe.setReadOnly(True)
     
-    
     contaTi = QLabel(w)
     contaTi.setText("Usuarios conectados")
+    contaTi.setStyleSheet("color: white")
     contaTe = QTextEdit(w)
     contaTe.setReadOnly(True)
+    
+    contaTe.append(myName+"\n")
+    if (users != "None"):
+        contaTe.append(users)
 
     textEnv = QTextEdit(w)
     
@@ -121,46 +179,75 @@ def chat(myName,serverIp,serverPort,app,geo, ssl_sock):
     vbox.addLayout(grid1)
     vbox.addLayout(grid2)
     w.setLayout(vbox)
-
-    client = ClientThread(contaTe,mensTe, textEnv, ssl_sock)
-    client.start()
+    
+    client = ClientThread(contaTe,mensTe, textEnv, ssl_sock,myName,w)
+    client.progressEvent.connect(remakeCont)
+    palette = QLabel()
+    w.defineThre(client)
     w.setGeometry(geo.x(),geo.y(),800,500)
+    w.setMinimumSize(800,500)
+    palette = QPalette()
+    palette.setBrush(QPalette.Background,QBrush(QPixmap("fk-neon.jpg").scaled(w.size())))
+    w.setPalette(palette)
     w.setWindowTitle("NEOM")
     w.show()
+    client.start()
 
     
-def start():
-    
-    def bCo_clicked():
+def start(app):
+        
+    def bCo_clicked(new):
         temp = False
         try:
-            serverIp = textT.text()
+            serverIp = str(textT.text())
             serverPort = int(textTP.text())
-            myName = textTU.text()
+            myName = str(textTU.text())
+            myPass = str(textTUS.text())
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.settimeout(2)
             ssl_sock=ssl.wrap_socket(s,ca_certs=ssl_certfile,cert_reqs=ssl.CERT_REQUIRED)
             try:
                 ssl_sock.connect((serverIp,serverPort))
-                print repr(ssl_sock.getpeername())
-                print ssl_sock.cipher()
-                print pprint.pformat(ssl_sock.getpeercert())
-                w.close()
-                temp = True
             except:
                 print "Falha ao tentar conectar no servidor"
         except:
             print "dados invalidos"
+        auth = MessageHandler()
+        ssl_sock.send(auth.sendAuthentication(myName, myPass, new=new))
+        ans = False
+        socket_list = [ssl_sock]
+        read_sockets, write_sockets, error_sockets = select.select(socket_list, [], [])
+        while not ans:
+            for sock in read_sockets:
+                if sock == ssl_sock:
+                    data = sock.recv(4096)
+                if data:
+                    auth.cleanAll()
+                    auth.receiveMessage(data)
+                    commands = auth.readOther()
+                    if "authenticate" in commands:
+                        if "ok" in commands:
+                            ans = True
+                            temp = True
+                            users = str(auth.readMessage())
+                            users = users.replace(',','\n')
+                        
+                            break
+                        elif "fail" in commands:
+                            text = auth.readMessage()
+                            print "Could not execute command:\n%s" % (text)
+                            ans = True
+                            break
+                        print "Error: Response could not be interpreted."
+                        ans = True
+                        break
         if (temp):
-            chat(myName,serverIp,serverPort,app,w.geometry(), ssl_sock)
+            w.close()
+            chat(myName,serverIp,serverPort,app,w.geometry(), ssl_sock,users)
     def bRes_clicked():
-        ServerIp = textT.text()
-        
-    app = QApplication(sys.argv)
+        new  = True
+        bCo_clicked(new)
     w = QWidget()
-    #palette = QPalette()
-    #palette.setBrush(QPalette.Background,QBrush(QPixmap("fk-neon.jpg")))
-    #w.setPalette(palette)
     subT = QLabel(w)
     subT.setText("Digite o ip do servidor:")
     subTP = QLabel(w)
@@ -201,11 +288,15 @@ def start():
     hbox.addStretch(1)
     w.setLayout(hbox)
 
-    
+    new = False
     w.setGeometry(200,200,200,300)
+    w.setMinimumSize(200,300)
+    
     w.setWindowTitle("NEOM")
     w.show()
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
-    start()
+    app = QApplication(sys.argv)
+    start(app)
+    sys.exit()
