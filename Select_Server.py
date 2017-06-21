@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 # TCP Chat server
-import socket, select
+import socket, select, sys
 import ssl
 from Server import *
 from Protocol import *
@@ -21,7 +21,10 @@ if __name__ == "__main__":
     # List to keep track of socket descriptors
     CONNECTION_LIST = []
     RECV_BUFFER = 4096  # Advisable to keep it as an exponent of 2
-    PORT = 5000
+    if len(sys.argv) > 1:
+        PORT = int(sys.argv[1])
+    else:
+        PORT = 5000
 
     server_socket = ServerThread()
     server_socket.run(PORT)
