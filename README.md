@@ -1,17 +1,19 @@
 # NEOM
 ### Universidade Federal do Rio de Janeiro
 
- *Programa de envio e recebimento de mensagens no modelo Cliente/Servidor.
+ *Programa de envio e recebimento de mensagens no modelo Cliente/Servidor com suporte para sistemas Unix.
 Por Amanda Camacho, Braian Igreja e Vinicius Souza.* 
 
 Para instalar o programa, rodar o arquivo install no terminal.
 ```
 ./install.sh
 ```
-Para instalar como servidor, colocar o argumento --server e para desinstalar, o argumento --uninstall.
+Para instalar como servidor, colocar o argumento `--server` e para desinstalar, o argumento `--uninstall.
 
 A instalação de pacotes do python do install.sh só oferece suporte para Linux (em especial Ubuntu). Se for instalar em
-outro sistema Unix, rodar o programa com o argumento --no-pkg e os pacotes terão que ser instalados por fora.
+outro sistema Unix, rodar o programa com o argumento `--no-pkg` e os pacotes terão que ser instalados por fora. Para
+instalação do PyQt4 em macOS vide site 
+[Installing PyQt4 On Mac OSX](https://robonobodojo.wordpress.com/2017/02/08/installing-pyqt4-on-mac-osx/).
 
 Para utilizar o chat, rodar o arquivo Select_Server no servidor. Se quiser especificar a porta usada, colocar como 
 argumento. Caso não seja escolhida nenhuma porta, ele automaticamente usa a 5000.
