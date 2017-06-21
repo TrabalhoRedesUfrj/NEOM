@@ -14,6 +14,7 @@ ssl_certfile = "./keys/server.crt"
 
 class ClientThread(QThread):
     progressEvent = pyqtSignal(QString)
+    serChato = pyqtSignal()
     def __init__(self,contaTe,mensTe, textEnv, ssl_sock,username,w):
         QThread.__init__(self)
         self.contaTe = contaTe
@@ -27,6 +28,8 @@ class ClientThread(QThread):
     def recieve(self,mens):
         self.mens = mens
         self.sent = 21
+    def sendvib(self):
+        self.sent = 22
     def close(self):
         self.runT = False
     def run(self):
@@ -63,17 +66,23 @@ class ClientThread(QThread):
                         elif cmd[0] == "newFile":
                             self.mensTe.append("\r%s:\n%s\n"%(user,msg))
                         elif cmd[0] == "chato":
-                            print "sou chato"
+                            self.serChato.emit()
                         else:
                             self.mensTe.append("\r%s:\n%s\n"%(user,msg))
                             
 
                 # user entered a message
                 else:
-                    if(self.sent != 0):
-                        
+                    if self.sent == 21:
                         out = MessageHandler()
                         out.addMessage(self.mens)
+                        out.addName(self.username)
+                        self.sent = 0
+                        self.ssl_sock.send(out.sendMessage())
+                    elif self.sent == 22:
+                        out = MessageHandler()
+                        out.addOther("chato")
+                        out.addMessage(" ")
                         out.addName(self.username)
                         self.sent = 0
                         self.ssl_sock.send(out.sendMessage())
@@ -85,9 +94,8 @@ class ChatJan(QWidget):
         self.thre = thre
     def closeEvent(self,event):
         self.thre.close()
-        
 def chat(myName,serverIp,serverPort,app,geo, ssl_sock,users):
-    def bAten_clicked():
+    def tremer():
         xOri = w.geometry().x()
         yOri = w.geometry().y()
         w.move(0,0)
@@ -103,6 +111,9 @@ def chat(myName,serverIp,serverPort,app,geo, ssl_sock,users):
             app.processEvents()
             time.sleep(0.01)
         w.move(xOri,yOri)
+    def bAten_clicked():
+        client.sendvib()
+        tremer()
         
     def bEnv_clicked():
         mensagem =  str(textEnv.toPlainText())
@@ -182,6 +193,7 @@ def chat(myName,serverIp,serverPort,app,geo, ssl_sock,users):
     
     client = ClientThread(contaTe,mensTe, textEnv, ssl_sock,myName,w)
     client.progressEvent.connect(remakeCont)
+    client.serChato.connect(tremer)
     palette = QLabel()
     w.defineThre(client)
     w.setGeometry(geo.x(),geo.y(),800,500)
@@ -247,15 +259,24 @@ def start(app):
     def bRes_clicked():
         new  = True
         bCo_clicked(new)
+    def onResize(event):
+        palette = QPalette()
+        palette.setBrush(QPalette.Background,QBrush(QPixmap("abstract-neon.jpg").scaled(w.size())))
+        w.setPalette(palette)
     w = QWidget()
+    w.resizeEvent = onResize
     subT = QLabel(w)
     subT.setText("Digite o ip do servidor:")
+    subT.setStyleSheet("color: white")
     subTP = QLabel(w)
     subTP.setText("Digite a porta do servidor:")
+    subTP.setStyleSheet("color: white")
     subTU = QLabel(w)
     subTU.setText("Digite o nome de usuario:")
+    subTU.setStyleSheet("color: white")
     subTUS = QLabel(w)
     subTUS.setText("Digite a senha:")
+    subTUS.setStyleSheet("color: white")
     textT = QLineEdit(w)
     textTP = QLineEdit(w)
     textTU = QLineEdit(w)
@@ -290,8 +311,10 @@ def start(app):
 
     new = False
     w.setGeometry(200,200,200,300)
-    w.setMinimumSize(200,300)
-    
+    w.setMinimumSize(200,350)
+    palette = QPalette()
+    palette.setBrush(QPalette.Background,QBrush(QPixmap("abstract-neon.jpg").scaled(w.size())))
+    w.setPalette(palette)
     w.setWindowTitle("NEOM")
     w.show()
     sys.exit(app.exec_())
