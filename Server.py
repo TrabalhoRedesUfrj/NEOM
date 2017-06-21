@@ -64,7 +64,7 @@ def broadcast_data(sock, message, connection_list, server_sock):
 
 
 def quitConnection(sock, address, connection_list, users, server_sock):
-    print "I'm quitting"
+    print "Quitting user %s"%(users[address])
     out = MessageHandler()
     out.addName("Server")
     out.addOther("userOut")

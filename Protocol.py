@@ -109,7 +109,9 @@ class MessageHandler:
             pics += [img]
         return pics
 
-    def readDocument(self, path="", client = None):
+    def readDocument(self, path="", client=None):
+        # TODO: Split file into smaller files
+        # The connection only allows up to 10MB in one package (buffer)
         if not self.document: return None
         import time
         data = "_%s_%1.2i:%1.2i"%(time.strftime("%d_%m_%Y"),
