@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     # List to keep track of socket descriptors
     CONNECTION_LIST = []
-    RECV_BUFFER = 4096  # Advisable to keep it as an exponent of 2
+    RECV_BUFFER = 262144  # Advisable to keep it as an exponent of 2
     if len(sys.argv) > 1:
         PORT = int(sys.argv[1])
     else:
@@ -62,7 +62,7 @@ if __name__ == "__main__":
                             for ad in usernames.keys():
                                 if check['user'] == usernames[ad]:
                                     out.addOther("fail")
-                                    out.addMessage("User already connected, cannot connect again.")
+                                    out.addMessage("Usuário já está conectado, não é possível reconectar.")
                                     print "%s tried another connection. Should change password?"%(check['user'])
                                     ssl_sock.send(out.sendMessage())
                                     ssl_sock.close()
@@ -85,9 +85,9 @@ if __name__ == "__main__":
                                 else:
                                     out.addOther("fail")
                                     if text == "Wrong Password":
-                                        out.addMessage("%s. Try again." % (text))
+                                        out.addMessage("Senha incorreta. Tente novamente." % (text))
                                     elif text == "No user":
-                                        out.addMessage("%s found. Try again." % (text))
+                                        out.addMessage("Usuário não encontrado. Tente novamente." % (text))
                                     ssl_sock.send(out.sendMessage())
                                     ssl_sock.close()
                             else:
@@ -98,9 +98,9 @@ if __name__ == "__main__":
                                 else:
                                     out.addOther("fail")
                                     if text == "Wrong Password":
-                                        out.addMessage("%s. Try again." % (text))
+                                        out.addMessage("Senha incorreta. Tente novamente." % (text))
                                     elif text == "No user":
-                                        out.addMessage("%s found. Try again." % (text))
+                                        out.addMessage("Usuário não encontrado. Tente novamente." % (text))
                                     ssl_sock.send(out.sendMessage())
                                     ssl_sock.close()
                             if connect:
@@ -121,7 +121,7 @@ if __name__ == "__main__":
                         out.cleanAll()
                         out.addName("Server")
                         out.addOther("userIn")
-                        out.addMessage("%s %s entered room\n" % (usernames[addr],str(addr)))
+                        out.addMessage("%s %s agora está disponível\n" % (usernames[addr],str(addr)))
                         broadcast_data(ssl_sock, out.sendMessage(), CONNECTION_LIST, server_socket)
                 except:
                     pass
@@ -154,7 +154,7 @@ if __name__ == "__main__":
                     out = MessageHandler()
                     out.addName("Server")
                     out.addOther("userOut")
-                    out.addMessage("Client %s %s is offline \n" % (usernames[addr],str(addr)))
+                    out.addMessage("Cliente %s %s está desconectado \n" % (usernames[addr],str(addr)))
                     print "Client %s %s is offline" % (usernames[addr],str(addr))
                     CONNECTION_LIST.remove(sock)
                     usernames.pop(addr)

@@ -187,13 +187,13 @@ class UserAuthentication:
     def addUser(self, user, password):
         # TODO: Save users in alphabetic order
         if " " in user:
-            raise NameError("User name invalid. Choose another")
+            raise NameError("Nome de usuário inválido. Escolha outro.")
         passHash = self._getHash(password)
         file = open(self.file, 'r+')
         lines = file.readlines()
         for line in lines[4:]:
             if line.split(',')[0] == user:
-                raise NameError("User already used. Choose another.")
+                raise NameError("Nome de usuário já existe. Escolha outro.")
         text = "%s,%s\n"%(user, passHash)
         file.write(text)
         file.close()
