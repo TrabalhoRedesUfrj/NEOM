@@ -54,21 +54,21 @@ class ClientThread(QThread):
                         msg = indata.readMessage()
                         user = indata.readName()
                         if cmd == None:
-                            self.mensTe.append("\r%s:\n%s\n"%(user,msg))
+                            self.mensTe.append("\r%s:\n%s"%(user,msg))
                         elif cmd[0] == "userIn":
-                            self.mensTe.append("\r%s:\n%s\n"%(user,msg))
+                            self.mensTe.append("\r%s:\n%s"%(user,msg))
                             self.contaTe.append(msg.split(" ")[0]+"\n")
                         elif cmd[0] == "userOut":
-                            self.mensTe.append("\r%s:\n%s\n"%(user,msg))
+                            self.mensTe.append("\r%s:\n%s"%(user,msg))
                             tempCont = self.contaTe.toPlainText()
                             tempCont.replace('\n'+msg.split(" ")[1]+'\n',"")
                             self.progressEvent.emit(tempCont)
                         elif cmd[0] == "newFile":
-                            self.mensTe.append("\r%s:\n%s\n"%(user,msg))
+                            self.mensTe.append("\r%s:\n%s"%(user,msg))
                         elif cmd[0] == "chato":
                             self.serChato.emit()
                         else:
-                            self.mensTe.append("\r%s:\n%s\n"%(user,msg))
+                            self.mensTe.append("\r%s:\n%s"%(user,msg))
                             
 
                 # user entered a message
@@ -128,6 +128,9 @@ def chat(myName,serverIp,serverPort,app,geo, ssl_sock,users):
     def remakeCont(newCont):
         contaTe.clear()
         contaTe.append(newCont)
+    def keyEven(event):
+            if event.key() == Qt.Key_Return:
+                bEnv_clicked()
     w = ChatJan()
     w.resizeEvent = onResize
     userT = QLabel(w)
@@ -153,7 +156,7 @@ def chat(myName,serverIp,serverPort,app,geo, ssl_sock,users):
         contaTe.append(users)
 
     textEnv = QTextEdit(w)
-    
+    textEnv.keyReleaseEvent = keyEven
     
     bAten = QPushButton(w)
     bAten.setText("aporrinhar o saco")
