@@ -15,6 +15,7 @@ ssl_certfile = "./keys/server.crt"
 class ClientThread(QThread):
     progressEvent = pyqtSignal(QString)
     serChato = pyqtSignal()
+    geraImg = pyqtSignal()
     def __init__(self,contaTe,mensTe, textEnv, ssl_sock,username,w):
         QThread.__init__(self)
         self.contaTe = contaTe
@@ -74,6 +75,8 @@ class ClientThread(QThread):
                             indata.readDocument("savedDocuments/")
                         elif cmd[0] == "newPicture":
                             self.mensTe.append("\r%s:\n%s"%(user,msg))
+                            self.imgPa = indata.readDocument("savedDocuments/")
+                            self.geraImg.emit()
                         elif cmd[0] == "chato":
                             self.serChato.emit()
                         else:
@@ -106,10 +109,12 @@ class ClientThread(QThread):
                         self.ssl_sock.send(out.sendMessage())
                     elif self.sent == 24:
                         out = MessageHandler()
-                        out.addPicture(self.imgf)
+                        out.addDocument(self.imgf)
                         out.addMessage("enviou uma imagem.")
                         out.addOther("newPicture")
                         out.addName(self.username)
+                        self.mensTe.append("\r%s:\n%s"%(self.username,"enviou uma imagem."))
+                        self.ssl_sock.send(out.sendMessage())
                         self.sent = 0
         out = MessageHandler()
         out.addMessage("QUIT")
@@ -155,22 +160,21 @@ def chat(myName,serverIp,serverPort,app,geo, ssl_sock,users):
         filename = str(fileDiag.getOpenFileName(w,'Open File','/'))
         if fileDiag.selectedFiles():
             client.sendfil(filename)
+    def showImg(filename):
+        print filename
+        showImg = QDialog()
+        palette = QPalette()
+        palette.setBrush(QPalette.Background,QBrush(QPixmap(filename)))
+        showImg.setPalette(palette)
+        showImg.setFixedSize(QPixmap(filename).width(),QPixmap(filename).height())
+        showImg.exec_()
     def bEnvImg_clicked():
         fileDiag = QFileDialog()
         fileDiag.setNameFilters(["Imagens (*.png *jpg)"])
         filename = str(fileDiag.getOpenFileName(w,'Open File','/'))
-        print filename
         if fileDiag.selectedFiles():
-
-            showImg = QDialog()
-            palette = QPalette()
-            palette.setBrush(QPalette.Background,QBrush(QPixmap(filename)))
-            showImg.setPalette(palette)
-            showImg.setGeometry(200,200,400,200)
-            showImg.exec_()
             client.sendimage(filename)
-            
-        
+            showImg(filename)
     def onResize(event):
         palette = QPalette()
         palette.setBrush(QPalette.Background,QBrush(QPixmap("fk-neon.jpg").scaled(w.size())))
@@ -181,6 +185,8 @@ def chat(myName,serverIp,serverPort,app,geo, ssl_sock,users):
     def keyEven(event):
             if event.key() == Qt.Key_Return:
                 bEnv_clicked()
+    def receberImg():
+        showImg(str(client.imgPa))
     w = ChatJan()
     w.resizeEvent = onResize
     userT = QLabel(w)
@@ -257,6 +263,7 @@ def chat(myName,serverIp,serverPort,app,geo, ssl_sock,users):
     client = ClientThread(contaTe,mensTe, textEnv, ssl_sock,myName,w)
     client.progressEvent.connect(remakeCont)
     client.serChato.connect(tremer)
+    client.geraImg.connect(receberImg)
     palette = QLabel()
     w.defineThre(client)
     w.setGeometry(geo.x(),geo.y(),800,500)
