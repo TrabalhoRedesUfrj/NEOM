@@ -30,6 +30,12 @@ class ClientThread(QThread):
         self.sent = 21
     def sendvib(self):
         self.sent = 22
+    def sendfil(self,filee):
+        self.filee = filee
+        self.sent = 23
+    def sendimage(self,imgf):
+        self.imgf = imgf
+        self.sent = 24
     def close(self):
         self.runT = False
     def run(self):
@@ -42,7 +48,7 @@ class ClientThread(QThread):
             for sock in read_sockets:
                 # incoming message from remote server
                 if sock == self.ssl_sock:
-                    data = sock.recv(4096)
+                    data = sock.recv(262144)
                     if not data:
                         print '\nDisconnected from chat server'
                         self.w.close()
@@ -65,6 +71,9 @@ class ClientThread(QThread):
                             self.progressEvent.emit(tempCont)
                         elif cmd[0] == "newFile":
                             self.mensTe.append("\r%s:\n%s"%(user,msg))
+                            indata.readDocument("savedDocuments/")
+                        elif cmd[0] == "newPicture":
+                            self.mensTe.append("\r%s:\n%s"%(user,msg))
                         elif cmd[0] == "chato":
                             self.serChato.emit()
                         else:
@@ -86,8 +95,25 @@ class ClientThread(QThread):
                         out.addName(self.username)
                         self.sent = 0
                         self.ssl_sock.send(out.sendMessage())
+                    elif self.sent == 23:
+                        out = MessageHandler()
+                        out.addMessage("enviou um arquivo.")
+                        out.addOther("newFile")
+                        out.addName(self.username)
+                        out.addDocument(self.filee)
+                        self.sent = 0
+                        self.mensTe.append("\r%s:\n%s"%(self.username,"enviou um arquivo."))
+                        self.ssl_sock.send(out.sendMessage())
+                    elif self.sent == 24:
+                        out = MessageHandler()
+                        out.addPicture(self.imgf)
+                        out.addMessage("enviou uma imagem.")
+                        out.addOther("newPicture")
+                        out.addName(self.username)
+                        self.sent = 0
         out = MessageHandler()
         out.addMessage("QUIT")
+        out.addName(self.username)
         self.ssl_sock.send(out.sendMessage())
 class ChatJan(QWidget):
     def defineThre(self,thre):
@@ -120,7 +146,31 @@ def chat(myName,serverIp,serverPort,app,geo, ssl_sock,users):
         client.recieve(mensagem)
         mensTe.append("\r%s:\n%s\n"%(myName,mensagem))
         textEnv.clear()
+    def bEnvFile_clicked():
+        fileDiag = QFileDialog()
+        fileDiag.setFilter(fileDiag.filter() | QDir.Hidden)
+        fileDiag.setDefaultSuffix('*')
+        fileDiag.setAcceptMode(QFileDialog().AcceptSave)
+        fileDiag.setNameFilters(['*(*.*)'])
+        filename = str(fileDiag.getOpenFileName(w,'Open File','/'))
+        if fileDiag.selectedFiles():
+            client.sendfil(filename)
+    def bEnvImg_clicked():
+        fileDiag = QFileDialog()
+        fileDiag.setNameFilters(["Imagens (*.png *jpg)"])
+        filename = str(fileDiag.getOpenFileName(w,'Open File','/'))
+        print filename
+        if fileDiag.selectedFiles():
 
+            showImg = QDialog()
+            palette = QPalette()
+            palette.setBrush(QPalette.Background,QBrush(QPixmap(filename)))
+            showImg.setPalette(palette)
+            showImg.setGeometry(200,200,400,200)
+            showImg.exec_()
+            client.sendimage(filename)
+            
+        
     def onResize(event):
         palette = QPalette()
         palette.setBrush(QPalette.Background,QBrush(QPixmap("fk-neon.jpg").scaled(w.size())))
@@ -153,18 +203,26 @@ def chat(myName,serverIp,serverPort,app,geo, ssl_sock,users):
     
     contaTe.append(myName+"\n")
     if (users != "None"):
-        contaTe.append(users)
+        contaTe.append(users+"\n")
 
     textEnv = QTextEdit(w)
     textEnv.keyReleaseEvent = keyEven
     
     bAten = QPushButton(w)
-    bAten.setText("aporrinhar o saco")
+    bAten.setText("Chamar a atencao")
     bAten.clicked.connect(bAten_clicked)
+
+    bEnvFile = QPushButton(w)
+    bEnvFile.setText("Enviar arquvo")
+    bEnvFile.clicked.connect(bEnvFile_clicked)
 
     bEnv = QPushButton(w)
     bEnv.setText("Enviar")
     bEnv.clicked.connect(bEnv_clicked)
+
+    bEnvImg = QPushButton(w)
+    bEnvImg.setText("Enviar imagem")
+    bEnvImg.clicked.connect(bEnvImg_clicked)
 
     grid1 = QGridLayout()
     grid1.addWidget(contaTi,1,1,Qt.AlignCenter)
@@ -173,9 +231,11 @@ def chat(myName,serverIp,serverPort,app,geo, ssl_sock,users):
     grid1.addWidget(mensTe,2,3)
 
     grid2 = QGridLayout()
-    grid2.addWidget(textEnv,3,1,2,1)
+    grid2.addWidget(textEnv,3,1,4,1)
     grid2.addWidget(bAten,3,2)
-    grid2.addWidget(bEnv,4,2)
+    grid2.addWidget(bEnvFile,4,2)
+    grid2.addWidget(bEnvImg,5,2)
+    grid2.addWidget(bEnv,6,2)
 
     hbox1 = QHBoxLayout()
     hbox1.addStretch()
@@ -212,53 +272,64 @@ def chat(myName,serverIp,serverPort,app,geo, ssl_sock,users):
 def start(app):
         
     def bCo_clicked(new):
-        temp = False
         try:
-            serverIp = str(textT.text())
-            serverPort = int(textTP.text())
-            myName = str(textTU.text())
-            myPass = str(textTUS.text())
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(2)
-            ssl_sock=ssl.wrap_socket(s,ca_certs=ssl_certfile,cert_reqs=ssl.CERT_REQUIRED)
+            temp = False
+            errMens = None
             try:
-                ssl_sock.connect((serverIp,serverPort))
+                serverIp = str(textT.text())
+                serverPort = int(textTP.text())
+                myName = str(textTU.text())
+                myPass = str(textTUS.text())
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.settimeout(2)
+                ssl_sock=ssl.wrap_socket(s,ca_certs=ssl_certfile,cert_reqs=ssl.CERT_REQUIRED)
+                try:
+                    ssl_sock.connect((serverIp,serverPort))
+                except:
+                    errMens =  "Falha ao tentar conectar no servidor"
             except:
-                print "Falha ao tentar conectar no servidor"
+                print "dados invalidos"
+            auth = MessageHandler()
+            ssl_sock.send(auth.sendAuthentication(myName, myPass, new=new))
+            ans = False
+            socket_list = [ssl_sock]
+            read_sockets, write_sockets, error_sockets = select.select(socket_list, [], [])
+            while not ans:
+                for sock in read_sockets:
+                    if sock == ssl_sock:
+                        data = sock.recv(262144)
+                    if data:
+                        auth.cleanAll()
+                        auth.receiveMessage(data)
+                        commands = auth.readOther()
+                        if "authenticate" in commands:
+                            if "ok" in commands:
+                                ans = True
+                                temp = True
+                                users = str(auth.readMessage())
+                                users = users.replace(',','\n')
+                            
+                                break
+                            elif "fail" in commands:
+                                text = auth.readMessage()
+                                errMens =  "Could not execute command:\n%s" % (text)
+                                ans = True
+                                break
+                            errMens =  "Error: Response could not be interpreted."
+                            ans = True
+                            break
         except:
-            print "dados invalidos"
-        auth = MessageHandler()
-        ssl_sock.send(auth.sendAuthentication(myName, myPass, new=new))
-        ans = False
-        socket_list = [ssl_sock]
-        read_sockets, write_sockets, error_sockets = select.select(socket_list, [], [])
-        while not ans:
-            for sock in read_sockets:
-                if sock == ssl_sock:
-                    data = sock.recv(4096)
-                if data:
-                    auth.cleanAll()
-                    auth.receiveMessage(data)
-                    commands = auth.readOther()
-                    if "authenticate" in commands:
-                        if "ok" in commands:
-                            ans = True
-                            temp = True
-                            users = str(auth.readMessage())
-                            users = users.replace(',','\n')
-                        
-                            break
-                        elif "fail" in commands:
-                            text = auth.readMessage()
-                            print "Could not execute command:\n%s" % (text)
-                            ans = True
-                            break
-                        print "Error: Response could not be interpreted."
-                        ans = True
-                        break
+                errMens = "Servidor nao encontrado"
+                print errMens
+                ans = True
         if (temp):
             w.close()
             chat(myName,serverIp,serverPort,app,w.geometry(), ssl_sock,users)
+        else:
+            errMensq = QMessageBox(None)
+            errMensq.setIcon(QMessageBox.Warning)
+            errMensq.setText(errMens)
+            errMensq.exec_()
     def bRes_clicked():
         new  = True
         bCo_clicked(new)
