@@ -319,10 +319,10 @@ def start(app):
                                 break
                             elif "fail" in commands:
                                 text = auth.readMessage()
-                                errMens =  "Could not execute command:\n%s" % (text)
+                                errMens =  "Nao foi possivel executar comando:\n%s" % (text)
                                 ans = True
                                 break
-                            errMens =  "Error: Response could not be interpreted."
+                            errMens =  "Resposta nao pode ser executada."
                             ans = True
                             break
         except:
