@@ -158,7 +158,7 @@ def chat(myName,serverIp,serverPort,app,geo, ssl_sock,users):
         fileDiag.setAcceptMode(QFileDialog().AcceptSave)
         fileDiag.setNameFilters(['*(*.*)'])
         filename = str(fileDiag.getOpenFileName(w,'Open File','/'))
-        if fileDiag.selectedFiles():
+        if fileDiag.selectedFiles() and filename != '':
             client.sendfil(filename)
     def showImg(filename):
         print filename
@@ -172,7 +172,7 @@ def chat(myName,serverIp,serverPort,app,geo, ssl_sock,users):
         fileDiag = QFileDialog()
         fileDiag.setNameFilters(["Imagens (*.png *jpg)"])
         filename = str(fileDiag.getOpenFileName(w,'Open File','/'))
-        if fileDiag.selectedFiles():
+        if fileDiag.selectedFiles() and filename != '':
             client.sendimage(filename)
             showImg(filename)
     def onResize(event):
