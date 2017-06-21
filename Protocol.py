@@ -1,3 +1,4 @@
+# -*- coding: latin-1 -*-
 """
     Code Protocols
     Author: Amanda
@@ -187,13 +188,13 @@ class UserAuthentication:
     def addUser(self, user, password):
         # TODO: Save users in alphabetic order
         if " " in user:
-            raise NameError("Nome de usuário inválido. Escolha outro.")
+            raise NameError("Nome de usuario invalido. Escolha outro.")
         passHash = self._getHash(password)
         file = open(self.file, 'r+')
         lines = file.readlines()
         for line in lines[4:]:
             if line.split(',')[0] == user:
-                raise NameError("Nome de usuário já existe. Escolha outro.")
+                raise NameError("Nome de usuario ja existe. Escolha outro.")
         text = "%s,%s\n"%(user, passHash)
         file.write(text)
         file.close()

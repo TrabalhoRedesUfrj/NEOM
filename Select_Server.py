@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: latin-1 -*-
 
 # TCP Chat server
 import socket, select, sys
@@ -62,7 +63,7 @@ if __name__ == "__main__":
                             for ad in usernames.keys():
                                 if check['user'] == usernames[ad]:
                                     out.addOther("fail")
-                                    out.addMessage("Usuário já está conectado, não é possível reconectar.")
+                                    out.addMessage("Usuario ja esta conectado, n�o e possivel reconectar.")
                                     print "%s tried another connection. Should change password?"%(check['user'])
                                     ssl_sock.send(out.sendMessage())
                                     ssl_sock.close()
@@ -87,7 +88,7 @@ if __name__ == "__main__":
                                     if text == "Wrong Password":
                                         out.addMessage("Senha incorreta. Tente novamente." % (text))
                                     elif text == "No user":
-                                        out.addMessage("Usuário não encontrado. Tente novamente." % (text))
+                                        out.addMessage("Usuario n�o encontrado. Tente novamente." % (text))
                                     ssl_sock.send(out.sendMessage())
                                     ssl_sock.close()
                             else:
@@ -100,7 +101,7 @@ if __name__ == "__main__":
                                     if text == "Wrong Password":
                                         out.addMessage("Senha incorreta. Tente novamente." % (text))
                                     elif text == "No user":
-                                        out.addMessage("Usuário não encontrado. Tente novamente." % (text))
+                                        out.addMessage("Usuario nao encontrado. Tente novamente." % (text))
                                     ssl_sock.send(out.sendMessage())
                                     ssl_sock.close()
                             if connect:
@@ -121,7 +122,7 @@ if __name__ == "__main__":
                         out.cleanAll()
                         out.addName("Server")
                         out.addOther("userIn")
-                        out.addMessage("%s %s agora está disponível\n" % (usernames[addr],str(addr)))
+                        out.addMessage("%s %s agora est� disponivel\n" % (usernames[addr],str(addr)))
                         broadcast_data(ssl_sock, out.sendMessage(), CONNECTION_LIST, server_socket)
                 except:
                     pass
@@ -154,7 +155,7 @@ if __name__ == "__main__":
                     out = MessageHandler()
                     out.addName("Server")
                     out.addOther("userOut")
-                    out.addMessage("Cliente %s %s está desconectado \n" % (usernames[addr],str(addr)))
+                    out.addMessage("Cliente %s %s esta desconectado \n" % (usernames[addr],str(addr)))
                     print "Client %s %s is offline" % (usernames[addr],str(addr))
                     CONNECTION_LIST.remove(sock)
                     usernames.pop(addr)
