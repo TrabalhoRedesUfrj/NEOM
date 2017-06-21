@@ -4,10 +4,12 @@
 """
 __all__ = ['TCPBase',
            'ServerThread',
-           'broadcast_data']
+           'broadcast_data',
+           'quitConnection']
 
 import socket
 import threading
+from Protocol import MessageHandler
 
 class TCPBase(threading.Thread):
     def __init__(self):
@@ -58,4 +60,17 @@ def broadcast_data(sock, message, connection_list, server_sock):
             except:
                 # broken socket connection may be, chat client pressed ctrl+c for example
                 socket.close()
-                CONNECTION_LIST.remove(socket)
+                connection_list.remove(socket)
+
+
+def quitConnection(sock, address, connection_list, users, server_sock):
+    print "I'm quitting"
+    out = MessageHandler()
+    out.addName("Server")
+    out.addOther("userOut")
+    out.addMessage("Client %s %s is offline \n" % (users[address], str(address)))
+    print "Client %s %s is offline" % (users[address], str(address))
+    connection_list.remove(sock)
+    users.pop(address)
+    broadcast_data(sock, out.sendMessage(), connection_list, server_sock)
+    sock.close()

@@ -129,17 +129,22 @@ if __name__ == "__main__":
                 try:
                     # In Windows, sometimes when a TCP program closes abruptly,
                     # a "Connection reset by peer" exception will be thrown
-                    out = MessageHandler()
+                    addr = sock.getpeername()
+                    inM = MessageHandler()
                     data = sock.recv(RECV_BUFFER)
                     if data:
-                        out.receiveMessage(data)
-                        if out.readOther():
-                            if "authenticate" in out.readOther():
+                        inM.receiveMessage(data)
+                        if inM.readOther():
+                            if "authenticate" in inM.readOther():
                                     continue
-                        if "QUIT" == out.readMessage():
-                            raise
+                        if "QUIT" in inM.readMessage():
+                            name = inM.readName()
+                            for key in usernames.keys():
+                                if usernames[key] == name:
+                                    addrQuit = key
+                            quitConnection(sock, addrQuit, CONNECTION_LIST, usernames, server_socket)
                         else:
-                            if usernames[sock.getpeername()] != out.readName():
+                            if usernames[sock.getpeername()] != inM.readName():
                                 print "Something wrong with the client!! It has forgotten it's own name!! :scream:"
                             broadcast_data(sock, data, CONNECTION_LIST, server_socket)
                 except:
@@ -148,10 +153,10 @@ if __name__ == "__main__":
                     out.addOther("userOut")
                     out.addMessage("Client %s %s is offline \n" % (usernames[addr],str(addr)))
                     print "Client %s %s is offline" % (usernames[addr],str(addr))
-                    sock.close()
                     CONNECTION_LIST.remove(sock)
                     usernames.pop(addr)
                     broadcast_data(sock, out.sendMessage(), CONNECTION_LIST, server_socket)
+                    sock.close()
                     continue
 
     server_socket.soc.close()
