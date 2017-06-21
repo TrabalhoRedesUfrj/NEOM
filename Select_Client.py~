@@ -3,13 +3,14 @@ from Protocol import MessageHandler
 
 ssl_certfile = "./keys/server.crt"
 
-def prompt():
-    sys.stdout.write('<You> ')
-    sys.stdout.flush()
-
-username = 'meunome'
-senha = 'ehzoado'
+username = '2'
+senha = 'me'
 new = False
+
+
+def prompt():
+    sys.stdout.write('<You-%s> '%(username))
+    sys.stdout.flush()
 
 # main function
 if __name__ == "__main__":
@@ -45,27 +46,28 @@ if __name__ == "__main__":
         for sock in read_sockets:
             if sock == ssl_sock:
                 data = sock.recv(4096)
-            if data:
-                auth.cleanAll()
-                auth.receiveMessage(data)
-                commands = auth.readOther()
-                if "authenticate" in commands:
-                    if "ok" in commands:
-                        ans = True
-                        users = auth.readMessage()
-                        users = users.split(',')
-                        break
-                    elif "fail" in commands:
-                        text = auth.readMessage()
-                        print "Could not execute command:\n%s" % (text)
+                if data:
+                    auth.cleanAll()
+                    auth.receiveMessage(data)
+                    commands = auth.readOther()
+                    if "authenticate" in commands:
+                        if "ok" in commands:
+                            ans = True
+                            users = auth.readMessage()
+                            if users:
+                                users = users.split(',')
+                            break
+                        elif "fail" in commands:
+                            text = auth.readMessage()
+                            print "Could not execute command:\n%s" % (text)
+                            sys.exit()
+                            prompt()
+                            ans = True
+                            break
+                        print "Error: Response could not be interpreted."
                         sys.exit()
                         prompt()
                         ans = True
-                        break
-                    print "Error: Response could not be interpreted."
-                    sys.exit()
-                    prompt()
-                    ans = True
                     break
 
     print 'Connected to remote host. Start sending messages'
@@ -81,7 +83,7 @@ if __name__ == "__main__":
         for sock in read_sockets:
             # incoming message from remote server
             if sock == ssl_sock:
-                data = sock.recv(4096)
+                data = sock.recv(262144)
                 if not data:
                     print '\nDisconnected from chat server'
                     sys.exit()

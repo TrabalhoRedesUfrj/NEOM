@@ -83,7 +83,7 @@ if __name__ == "__main__":
         for sock in read_sockets:
             # incoming message from remote server
             if sock == ssl_sock:
-                data = sock.recv(4096)
+                data = sock.recv(262144)
                 if not data:
                     print '\nDisconnected from chat server'
                     sys.exit()

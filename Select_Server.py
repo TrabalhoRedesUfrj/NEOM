@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     # List to keep track of socket descriptors
     CONNECTION_LIST = []
-    RECV_BUFFER = 4096  # Advisable to keep it as an exponent of 2
+    RECV_BUFFER = 262144  # Advisable to keep it as an exponent of 2
     if len(sys.argv) > 1:
         PORT = int(sys.argv[1])
     else:
