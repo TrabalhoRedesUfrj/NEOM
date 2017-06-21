@@ -1,8 +1,7 @@
 ##+"""
 ##+    Main function of the client with GUI
-##+    Author: Ex7755
+##+    Author: Ex7755(Braian)
 ##+"""
-
 import sys
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -333,6 +332,7 @@ def start(app):
             w.close()
             chat(myName,serverIp,serverPort,app,w.geometry(), ssl_sock,users)
         else:
+            print errMens
             errMensq = QMessageBox(None)
             errMensq.setIcon(QMessageBox.Warning)
             errMensq.setText(errMens)
